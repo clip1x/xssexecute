@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum avec faille XSS et connexion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .form-container {
+            margin: 20px 0;
+        }
+        .message-box {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Forum de discussion</h1>
+
+        <!-- Formulaire de connexion -->
+        <div class="form-container" id="login-form">
+            <h2>Connexion</h2>
+            <form id="login" onsubmit="return handleLogin(event)">
+                <label for="username">Nom d'utilisateur :</label><br>
+                <input type="text" id="username" name="username" required><br><br>
+                <label for="password">Mot de passe :</label><br>
+                <input type="password" id="password" name="password" required><br><br>
+                <input type="submit" value="Se connecter">
+            </form>
+        </div>
+
+        <!-- Message posté -->
+        <div id="user-content" style="display:none;">
+            <h2>Publier un message</h2>
+            <form id="post-form" onsubmit="return postMessage(event)">
+                <label for="message">Message :</label><br>
+                <input type="text" id="message" name="message" required><br><br>
+                <input type="submit" value="Envoyer">
+            </form>
+
+            <div class="message-box" id="messages">
+                <!-- Les messages seront affichés ici -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // Fonction de connexion
+        function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Vérification des identifiants
+            if ((username === 'User' && password === 'User') || (username === 'Admin' && password === 'Admin')) {
+                currentUser = username;
+                alert('Connexion réussie!');
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('user-content').style.display = 'block';
+            } else {
+                alert('Identifiants incorrects!');
+            }
+        }
+
+        // Fonction de publication de message avec faille XSS
+        function postMessage(event) {
+            event.preventDefault();
+            const message = document.getElementById('message').value;
+
+            // Affichage du message dans la page sans échappement (faille XSS)
+            const messageBox = document.createElement('div');
+            messageBox.classList.add('message');
+            messageBox.innerHTML = `<strong>${currentUser} :</strong> ${message}`;
+            document.getElementById('messages').appendChild(messageBox);
+
+            // Réinitialiser le formulaire
+            document.getElementById('message').value = '';
+        }
+    </script>
+
+</body>
+</html>
